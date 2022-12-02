@@ -1,0 +1,8 @@
+https://en.wikipedia.org/wiki/BMP_file_format
+https://docs.fileformat.com/image/bmp/
+http://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm
+https://upload.wikimedia.org/wikipedia/commons/7/75/BMPfileFormat.svg
+
+
+
+2 bytes - 0x424d
