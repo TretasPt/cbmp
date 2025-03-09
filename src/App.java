@@ -23,20 +23,20 @@ public class App {
 
         System.out.println(bmp.temp());
 
-        // File output = new File("C:/MultiUser/JAVA/cbmp/output/zebra24 copy.bmp");
+        File output = new File("C:/MultiUser/JAVA/cbmp/output/zebra24 copy.bmp");
         
-        // // Path path = Paths.get("C:/MultiUser/JAVA/cbmp/input/zebra24.bmp");
-        // Path path = Paths.get("C:/MultiUser/JAVA/cbmp/input/bmp_test.bmp");
+        // Path path = Paths.get("C:/MultiUser/JAVA/cbmp/input/zebra24.bmp");
+        Path path = Paths.get("C:/MultiUser/JAVA/cbmp/input/bmp_test.bmp");
 
-        // byte[] data = Files.readAllBytes(path);
+        byte[] data = Files.readAllBytes(path);
 
-        // for (int i= 53;i!=data.length;i++){
-        //     data[i]=(byte)(Math.random()*255);
-        // }
+        for (int i= 53;i!=data.length;i++){
+            data[i]=(byte)(Math.random()*255);
+        }
 
-        // System.out.println(data.length);
+        System.out.println(data.length);
 
-        // Files.write(output.toPath(), data);
+        Files.write(output.toPath(), data);
 
 
     }

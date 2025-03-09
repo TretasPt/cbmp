@@ -1,0 +1,3 @@
+Par de programas para:
+	Converter um ficheiro c e uma imagem, numa nova imagem(compilavel em c).
+	//Programa para extrair o codigo c.(desnecessário)
