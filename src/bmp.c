@@ -41,12 +41,17 @@ struct BMPInfoHeader
 
 #pragma pack(pop)
 
-int randRange(int min, int max){
+int randRange(int min, int max)
+{
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
+int distance(int x1, int y1, int x2, int y2){
+    return sqrt(pow(x2-x1,2) + pow(y2-y1,2));
+}
+
 // Function to write BMP image
-void createBMP(const char *filename, int width, int height, uint8_t red, uint8_t green, uint8_t blue)
+void createBMP(const char *filename, int width, int height)
 {
     // Create the BMP file
     FILE *file = fopen(filename, "wb");
@@ -60,17 +65,19 @@ void createBMP(const char *filename, int width, int height, uint8_t red, uint8_t
     struct BMPHeader bmpHeader = {0};
     struct BMPInfoHeader bmpInfoHeader = {0};
 
-    bmpHeader.bfType = 0x4D42;                                                                  // "BM" in ASCII
-    bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (width * height * 3); // Total file size
-    bmpHeader.bfOffBits = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader);                     // Data offset
+    int imageByteCount = width * height * sizeof(struct Color);
+
+    bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
+    bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
+    bmpHeader.bfOffBits = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader);                 // Data offset
 
     bmpInfoHeader.biSize = sizeof(struct BMPInfoHeader);
     bmpInfoHeader.biWidth = width;
     bmpInfoHeader.biHeight = height;
     bmpInfoHeader.biPlanes = 1;
-    bmpInfoHeader.biBitCount = 24;                  // 24 bits for RGB
-    bmpInfoHeader.biCompression = 0;                // No compression
-    bmpInfoHeader.biSizeImage = width * height * 3; // Image data size
+    bmpInfoHeader.biBitCount = 24;              // 24 bits for RGB
+    bmpInfoHeader.biCompression = 0;            // No compression
+    bmpInfoHeader.biSizeImage = imageByteCount; // Image data size
     // bmpInfoHeader.biXPelsPerMeter = 2835; // 72 DPI
     // bmpInfoHeader.biYPelsPerMeter = 2835; // 72 DPI
     bmpInfoHeader.biXPelsPerMeter = 0; // 0 = no data
@@ -81,9 +88,7 @@ void createBMP(const char *filename, int width, int height, uint8_t red, uint8_t
     fwrite(&bmpInfoHeader, sizeof(struct BMPInfoHeader), 1, file);
 
     // Prepare pixel data (RGB)
-    // uint32_t *pixelData = (uint32_t *)malloc(width * height * 4);
-    struct Color *pixelData = (struct Color *)malloc(width * height * sizeof(struct Color));
-    // struct Color *pixelData = (struct Color *)malloc(width * height * sizeof(Color));
+    struct Color *pixelData = (struct Color *)malloc(imageByteCount);
     if (!pixelData)
     {
         perror("Unable to allocate memory for pixel data");
@@ -91,26 +96,38 @@ void createBMP(const char *filename, int width, int height, uint8_t red, uint8_t
         return;
     }
 
-    // Set the pixel data (all pixels will have the specified color)
-    for (int i = 0; i < width * height; i++)
+    // for (int i = 0; i < width * height; i++)
+    // {
+    //     pixelData[i].red = randRange(0, 255);
+    //     pixelData[i].green = randRange(0, 255);
+    //     pixelData[i].blue = randRange(0, 255);
+    // }
+    int crx, cry,cgx,cgy,cbx,cby;
+    crx = randRange(0,255);
+    cry = randRange(0,255);
+    cgx = randRange(0,255);
+    cgy = randRange(0,255);
+    cbx = randRange(0,255);
+    cby = randRange(0,255);
+    printf("%d,%d\n%d,%d\n%d,%d\n",crx, cry,cgx,cgy,cbx,cby);
+    for (int y = 0; y < height; y++)
     {
-        pixelData[i].red = randRange(0,255);
-        pixelData[i].green = randRange(0,255);
-        pixelData[i].blue = randRange(0,255);
-        //     pixelData[i] = {
-        //         .red = 255;
-        //     .green = 255;
-        //     .blue = 255;
-        // }
-
-        // Blue
-        // pixelData[i * 3] = 255;     // blue;   // Blue
-        // pixelData[i * 3 + 1] = 155; // green; // Green
-        // pixelData[i * 3 + 2] = 55;  // red; // Red
+        for (int x = 0; x < width; x++)
+        {
+            pixelData[width * y + x].red = 1-(distance(x,y,0,0)%255);
+            pixelData[width * y + x].green = 1-(distance(x,y,0,99)%255);
+            pixelData[width * y + x].blue = 1-(distance(x,y,99,50)%255);
+            // pixelData[width * y + x].red = (x < 70 && y < 60) ? 255 : 0;
+            // pixelData[width * y + x].green = (x < 70 && y > 40) ? 255 : 0;
+            // pixelData[width * y + x].blue = (x > 50) ? 255 : 0;
+            // pixelData[width * y + x].red = randRange(0, 255);
+            // pixelData[width * y + x].green = randRange(0, 255);
+            // pixelData[width * y + x].blue = randRange(0, 255);
+        }
     }
 
     // Write pixel data to the file
-    fwrite(pixelData, 1, width * height * 3, file);
+    fwrite(pixelData, 1, imageByteCount, file);
 
     // Clean up and close the file
     free(pixelData);
@@ -126,7 +143,7 @@ int main()
     printf("Color size %d\n", sizeof(struct Color));
 
     // Create a BMP file with the specified dimensions and color
-    createBMP("output.bmp", width, height, red, green, blue);
+    createBMP("output.bmp", width, height);
 
     printf("BMP image created successfully!\n");
 
@@ -134,7 +151,6 @@ int main()
     // {
     //     printf("%d\n",randRange(0,5));
     // }
-    
 
     return 0;
 }
