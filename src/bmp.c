@@ -114,9 +114,12 @@ void createBMP(const char *filename, int width, int height)
     {
         for (int x = 0; x < width; x++)
         {
-            pixelData[width * y + x].red = 1-(distance(x,y,0,0)%255);
-            pixelData[width * y + x].green = 1-(distance(x,y,0,99)%255);
-            pixelData[width * y + x].blue = 1-(distance(x,y,99,50)%255);
+            pixelData[width * y + x].red = fmax(0,255-(distance(x,y,0,0)));
+            pixelData[width * y + x].green = fmax(0,255-(distance(x,y,0,height)));
+            pixelData[width * y + x].blue = fmax(0,255-(distance(x,y,width,height/2)));
+            // pixelData[width * y + x].red = 255-(distance(x,y,0,0)%255);
+            // pixelData[width * y + x].green = 255-(distance(x,y,0,height)%255);
+            // pixelData[width * y + x].blue = 255-(distance(x,y,width,height/2)%255);
             // pixelData[width * y + x].red = (x < 70 && y < 60) ? 255 : 0;
             // pixelData[width * y + x].green = (x < 70 && y > 40) ? 255 : 0;
             // pixelData[width * y + x].blue = (x > 50) ? 255 : 0;
@@ -136,14 +139,13 @@ void createBMP(const char *filename, int width, int height)
 
 int main()
 {
-    int width = 100;                        // Image width
-    int height = 100;                       // Image height
-    uint8_t red = 255, green = 0, blue = 0; // Color (red)
+    int width = 500;                        // Image width
+    int height = 500;                       // Image height
     // printf("Color size %d\n", sizeof(Color));
     printf("Color size %d\n", sizeof(struct Color));
 
     // Create a BMP file with the specified dimensions and color
-    createBMP("output.bmp", width, height);
+    createBMP("output/output.bmp", width, height);
 
     printf("BMP image created successfully!\n");
 
