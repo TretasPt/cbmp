@@ -41,13 +41,19 @@ int main(int argc, char const *argv[])
 
     // printf("%s", img1.filename);
 
-    for (int i2 = 0; i2 < 10; i2++)
+    // for (int i2 = 0; i2 < 10; i2++)
+    // {
+    //     printf("%d\n", i2);
+    // }
+    // for (weirdForInitializer(5); weirdForCondition(15); weirdForAfterCycle())
+    // {
+    //     printf("%d\n", i);
+    // }
+
+    printf("There are %d arguments.\n", argc);
+    for (int i = 0; i < argc; i++)
     {
-        printf("%d\n", i2);
-    }
-    for (weirdForInitializer(5); weirdForCondition(15); weirdForAfterCycle())
-    {
-        printf("%d\n", i);
+        printf("%d: %s\n", i, argv[i]);
     }
 }
 
