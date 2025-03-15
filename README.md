@@ -16,6 +16,7 @@ cbmp [**-if** *infiles*] [**-if2** *infiles2*] [**-of** *outfiles*]
 
 [Simple](#encoding-simple)
 [Mixed](#encoding-mixed)
+[XOR](#encoding-xor)
 
 ### Encoding Simple
 

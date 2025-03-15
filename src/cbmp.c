@@ -1,56 +1,46 @@
+#include "cbmp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
 
-#pragma pack(push, 1) // Ensure no padding
-struct Color
+// Declarations
+
+int randRange(int, int);
+int distance(int, int, int, int);
+
+int main()
 {
-    uint8_t blue;
-    uint8_t green;
-    uint8_t red;
-};
+    int width = 500;  // Image width
+    int height = 500; // Image height
+    // printf("Color size %d\n", sizeof(Color));
+    printf("Color size %d\n", sizeof(struct Color24));
 
-// Define the BMP header structures
+    // Create a BMP file with the specified dimensions and color
+    createBMP("output/output.bmp", width, height);
 
-// BMP file header (14 bytes)
-struct BMPHeader
-{
-    uint16_t bfType;      // File type, must be 'BM'
-    uint32_t bfSize;      // Size of the BMP file
-    uint16_t bfReserved1; // Reserved, should be 0
-    uint16_t bfReserved2; // Reserved, should be 0
-    uint32_t bfOffBits;   // Offset to the start of pixel data
-};
+    printf("BMP image created successfully!\n");
 
-// BMP info header (40 bytes)
-struct BMPInfoHeader
-{
-    uint32_t biSize;         // Size of the info header
-    int32_t biWidth;         // Width of the image
-    int32_t biHeight;        // Height of the image
-    uint16_t biPlanes;       // Number of planes, must be 1
-    uint16_t biBitCount;     // Bits per pixel (24 for RGB) //1, 4, 8, 15, 24, 32, or 64
-    uint32_t biCompression;  // Compression method (0 = none)
-    uint32_t biSizeImage;    // Size of the image data
-    int32_t biXPelsPerMeter; // X pixels per meter (0 for default)
-    int32_t biYPelsPerMeter; // Y pixels per meter (0 for default)
-    uint32_t biClrUsed;      // Number of colors used (0 for default)
-    uint32_t biClrImportant; // Number of important colors (0 for default)
-};
+    // for (int i = 0; i < 100; i++)
+    // {
+    //     printf("%d\n",randRange(0,5));
+    // }
 
-#pragma pack(pop)
+    return 0;
+}
 
+// b
 int randRange(int min, int max)
 {
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
-int distance(int x1, int y1, int x2, int y2){
-    return sqrt(pow(x2-x1,2) + pow(y2-y1,2));
+int distance(int x1, int y1, int x2, int y2)
+{
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-// Function to write BMP image
 void createBMP(const char *filename, int width, int height)
 {
     // Create the BMP file
@@ -65,7 +55,7 @@ void createBMP(const char *filename, int width, int height)
     struct BMPHeader bmpHeader = {0};
     struct BMPInfoHeader bmpInfoHeader = {0};
 
-    int imageByteCount = width * height * sizeof(struct Color);
+    int imageByteCount = width * height * sizeof(struct Color24);
 
     bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
     bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
@@ -88,7 +78,7 @@ void createBMP(const char *filename, int width, int height)
     fwrite(&bmpInfoHeader, sizeof(struct BMPInfoHeader), 1, file);
 
     // Prepare pixel data (RGB)
-    struct Color *pixelData = (struct Color *)malloc(imageByteCount);
+    struct Color24 *pixelData = (struct Color24 *)malloc(imageByteCount);
     if (!pixelData)
     {
         perror("Unable to allocate memory for pixel data");
@@ -102,21 +92,21 @@ void createBMP(const char *filename, int width, int height)
     //     pixelData[i].green = randRange(0, 255);
     //     pixelData[i].blue = randRange(0, 255);
     // }
-    int crx, cry,cgx,cgy,cbx,cby;
-    crx = randRange(0,255);
-    cry = randRange(0,255);
-    cgx = randRange(0,255);
-    cgy = randRange(0,255);
-    cbx = randRange(0,255);
-    cby = randRange(0,255);
-    printf("%d,%d\n%d,%d\n%d,%d\n",crx, cry,cgx,cgy,cbx,cby);
+    int crx, cry, cgx, cgy, cbx, cby;
+    crx = randRange(0, 255);
+    cry = randRange(0, 255);
+    cgx = randRange(0, 255);
+    cgy = randRange(0, 255);
+    cbx = randRange(0, 255);
+    cby = randRange(0, 255);
+    printf("%d,%d\n%d,%d\n%d,%d\n", crx, cry, cgx, cgy, cbx, cby);
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-            pixelData[width * y + x].red = fmax(0,255-(distance(x,y,0,0)));
-            pixelData[width * y + x].green = fmax(0,255-(distance(x,y,0,height)));
-            pixelData[width * y + x].blue = fmax(0,255-(distance(x,y,width,height/2)));
+            pixelData[width * y + x].red = fmax(0, 255 - (distance(x, y, 0, 0)));
+            pixelData[width * y + x].green = fmax(0, 255 - (distance(x, y, 0, height)));
+            pixelData[width * y + x].blue = fmax(0, 255 - (distance(x, y, width, height / 2)));
             // pixelData[width * y + x].red = 255-(distance(x,y,0,0)%255);
             // pixelData[width * y + x].green = 255-(distance(x,y,0,height)%255);
             // pixelData[width * y + x].blue = 255-(distance(x,y,width,height/2)%255);
@@ -135,24 +125,4 @@ void createBMP(const char *filename, int width, int height)
     // Clean up and close the file
     free(pixelData);
     fclose(file);
-}
-
-int main()
-{
-    int width = 500;                        // Image width
-    int height = 500;                       // Image height
-    // printf("Color size %d\n", sizeof(Color));
-    printf("Color size %d\n", sizeof(struct Color));
-
-    // Create a BMP file with the specified dimensions and color
-    createBMP("output/output.bmp", width, height);
-
-    printf("BMP image created successfully!\n");
-
-    // for (int i = 0; i < 100; i++)
-    // {
-    //     printf("%d\n",randRange(0,5));
-    // }
-
-    return 0;
 }
