@@ -4,29 +4,46 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 
 // Declarations
+
+#define ARG_SUCCESS 1
+#define ARG_ERROR -1
+#define ARG_NEUTRAL 0
 
 int randRange(int, int);
 int distance(int, int, int, int);
 
-int main()
+int parameterLoop(int argc, char const *argv[]);
+int handleParameter(int *pI, int argc, char const *argv[]);
+
+int main(int argc, char const *argv[])
 {
-    int width = 500;  // Image width
-    int height = 500; // Image height
-    // printf("Color size %d\n", sizeof(Color));
-    printf("Color size %d\n", sizeof(struct Color24));
+    // int width = 500;  // Image width
+    // int height = 500; // Image height
 
-    // Create a BMP file with the specified dimensions and color
-    createBMP("output/output.bmp", width, height);
+    // // Create a BMP file with the specified dimensions and color
+    // createBMP("output/output.bmp", width, height);
 
-    printf("BMP image created successfully!\n");
+    // printf("BMP image created successfully.\n");
+    int success = parameterLoop(argc, argv);
+    switch (success)
+    {
+    case ARG_ERROR:
+        printf("Code finished execution early with errors.");
+        break;
+    case ARG_SUCCESS:
+        printf("Code finished execution early with no errors.");
+        break;
+    case ARG_NEUTRAL:
+        printf("Code finished execution with no errors.");
+        break;
 
-    // for (int i = 0; i < 100; i++)
-    // {
-    //     printf("%d\n",randRange(0,5));
-    // }
-
+    default:
+        printf("Code finished execution with unknown success status %d.", success);
+        break;
+    }
     return 0;
 }
 
@@ -55,7 +72,7 @@ void createBMP(const char *filename, int width, int height)
     struct BMPHeader bmpHeader = {0};
     struct BMPInfoHeader bmpInfoHeader = {0};
 
-    int imageByteCount = width * height * sizeof(struct Color24);
+    int imageByteCount = width * height * sizeof(union Color24);
 
     bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
     bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
@@ -78,7 +95,7 @@ void createBMP(const char *filename, int width, int height)
     fwrite(&bmpInfoHeader, sizeof(struct BMPInfoHeader), 1, file);
 
     // Prepare pixel data (RGB)
-    struct Color24 *pixelData = (struct Color24 *)malloc(imageByteCount);
+    union Color24 *pixelData = (union Color24 *)malloc(imageByteCount);
     if (!pixelData)
     {
         perror("Unable to allocate memory for pixel data");
@@ -125,4 +142,67 @@ void createBMP(const char *filename, int width, int height)
     // Clean up and close the file
     free(pixelData);
     fclose(file);
+}
+
+int handleParameter(int *pI, int argc, char const *argv[])
+{
+    if (argc <= 1)
+    {
+        printf("Some help function will be called and will print some info.\n");
+        return ARG_ERROR;
+    }
+    if (*pI >= argc)
+    {
+        return ARG_ERROR;
+    }
+
+    char *currentCommand = argv[*pI];
+    // printf("i=%d\n",*pI);
+    // printf("%d: %s\n", *pI, currentCommand);
+
+    if (strcmp(currentCommand, "-h") == 0 || strcmp(currentCommand, "--help") == 0)
+    {
+        printf("Some help function will be called and will print some info.\n");
+        (*pI)++;
+        return ARG_SUCCESS;
+    }
+    else if (strcmp(currentCommand, "-if") == 0)
+    {
+        if (*pI + 1 >= argc)
+        {
+            printf("Not enough arguments passed. After the flag \"%s\" an input file or directory was expected.\n", currentCommand);
+            // (*pI)++;
+            return ARG_ERROR;
+        }
+        // TODO get all the infiles
+        char *infiles = argv[++(*pI)];
+        printf("infiles set to: %s\n", infiles);
+        (*pI)++;
+        return ARG_NEUTRAL;
+    }
+    else
+    {
+        printf("Unrecognized parameter: %s\nExiting...\n", currentCommand);
+        // (*pI)++;
+        return ARG_ERROR;
+    }
+
+    (*pI)++;
+    return ARG_ERROR; // Should never happen. Only here to catch errors
+};
+
+int parameterLoop(int argc, char const *argv[])
+{
+
+    // printf("There are %d arguments.\n", argc - 1);
+    int i = 1;
+    int *pI = &i;
+    int loopStatus = ARG_NEUTRAL;
+    // for (i = 0; i < argc; i++)
+    do
+    {
+        loopStatus = handleParameter(pI, argc, argv);
+    } while (i < argc && loopStatus == ARG_NEUTRAL);
+
+    return loopStatus;
 }

@@ -1,3 +1,4 @@
+#include "cbmp.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,6 +56,8 @@ int main(int argc, char const *argv[])
     {
         printf("%d: %s\n", i, argv[i]);
     }
+
+    union Color24 color = {0};
 }
 
 static int firstMain(int argc, char const *argv[])
