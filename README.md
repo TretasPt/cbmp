@@ -8,20 +8,19 @@ The idea is to create a shell program with multiple possible encodings.
 The current expected structure is:
 
 cbmp [**-h** | **--help**]  
-cbmp [**-if** *infiles*] [**-if2** *infiles2*] [**-of** *outfiles*]
+cbmp [**-if** *infiles*] [**-if2** *infiles2*] [**-of** *outfiles*] [**-r** | **--recover** | **--reverse** | **--decode**] [**-e** *encoding*]
 
-[Encodings](#securityencodingencription) - Contains a list of valid encodings.
+[Encodings](#encoding) - Contains a list of valid encodings.
 
-## security/encoding/encription
+## encoding
 
-[Simple](#encoding-simple)
-[Mixed](#encoding-mixed)
-[XOR](#encoding-xor)
+- [Simple](#encoding-simple) enc_simple
+- [Mixed](#encoding-mixed) enc_mixed
+- [XOR](#encoding-xor) enc_xor
 
 ### Encoding Simple
 
     For now only simple will be implemented.
-    mixed
 
 ### Encoding Mixed
 

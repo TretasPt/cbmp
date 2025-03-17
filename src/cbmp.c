@@ -31,17 +31,17 @@ int main(int argc, char const *argv[])
     switch (success)
     {
     case ARG_ERROR:
-        printf("Code finished execution early with errors.");
+        printf("Code finished execution early with errors.\n");
         break;
     case ARG_SUCCESS:
-        printf("Code finished execution early with no errors.");
+        printf("Code finished execution early with no errors.\n");
         break;
     case ARG_NEUTRAL:
-        printf("Code finished execution with no errors.");
+        printf("Code finished execution with no errors.\n");
         break;
 
     default:
-        printf("Code finished execution with unknown success status %d.", success);
+        printf("Code finished execution with unknown success status %d.\n", success);
         break;
     }
     return 0;
@@ -177,6 +177,26 @@ int handleParameter(int *pI, int argc, char const *argv[])
         // TODO get all the infiles
         char *infiles = argv[++(*pI)];
         printf("infiles set to: %s\n", infiles);
+        (*pI)++;
+        return ARG_NEUTRAL;
+    }
+    else if (strcmp(currentCommand, "-r") == 0 || strcmp(currentCommand, "--recover") == 0 ||
+             strcmp(currentCommand, "--reverse") == 0 || strcmp(currentCommand, "--decode") == 0)
+    {
+        printf("Decoding mode selected.\n");
+        (*pI)++;
+        return ARG_NEUTRAL;
+    }
+    else if (strcmp(currentCommand, "-e") == 0)
+    {
+        if (*pI + 1 >= argc)
+        {
+            printf("Not enough arguments passed. After the flag \"%s\" encoding was expected.\n", currentCommand);
+            return ARG_ERROR;
+        }
+        // TODO get all the infiles
+        char *encoding = argv[++(*pI)];
+        printf("Selected endoding is %s.\n", encoding);
         (*pI)++;
         return ARG_NEUTRAL;
     }
