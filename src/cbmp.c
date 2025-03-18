@@ -12,11 +12,23 @@
 #define ARG_ERROR -1
 #define ARG_NEUTRAL 0
 
+struct CBMPSettings
+{
+    char **infiles;
+    int infilesCount;
+    char **infiles2;
+    int infiles2Count;
+    char **outfiles;
+    int outfilesCount;
+    int reverse;
+};
+
 int randRange(int, int);
 int distance(int, int, int, int);
 
-int parameterLoop(int argc, char const *argv[]);
-int handleParameter(int *pI, int argc, char const *argv[]);
+int parameterLoop(int argc, char const *argv[], struct CBMPSettings *settings);
+int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings);
+int getStringCount(int argc, char const *argv[], int index);
 
 int main(int argc, char const *argv[])
 {
@@ -27,7 +39,8 @@ int main(int argc, char const *argv[])
     // createBMP("output/output.bmp", width, height);
 
     // printf("BMP image created successfully.\n");
-    int success = parameterLoop(argc, argv);
+    struct CBMPSettings settings = {0};
+    int success = parameterLoop(argc, argv, &settings);
     switch (success)
     {
     case ARG_ERROR:
@@ -44,6 +57,19 @@ int main(int argc, char const *argv[])
         printf("Code finished execution with unknown success status %d.\n", success);
         break;
     }
+
+    printf("Settings:\n\tInFiles[%d]: ",settings.infilesCount);
+    // for (int i = 0; i < settings.infilesCount; i++)
+    // {
+    //     // char* a = (*(settings.infiles))[i];
+    //     // printf("%d",i);
+    //     // printf("%d",settings.infiles);
+    //     printf("%s; ",settings.infiles[i]);
+    // }
+    
+    printf("\n\tInFiles2[%d]: ", settings.infiles2Count);
+    printf("\n\tOutFiles[%d]: ", settings.outfilesCount);
+    printf("\n\tIsReverse: %d\n", settings.reverse);
     return 0;
 }
 
@@ -144,7 +170,7 @@ void createBMP(const char *filename, int width, int height)
     fclose(file);
 }
 
-int handleParameter(int *pI, int argc, char const *argv[])
+int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings)
 {
     if (argc <= 1)
     {
@@ -175,15 +201,19 @@ int handleParameter(int *pI, int argc, char const *argv[])
             return ARG_ERROR;
         }
         // TODO get all the infiles
+        settings->infilesCount = getStringCount(argc, argv, *pI) - (*pI + 1);
+        printf("There are %d files.\n", settings->infilesCount);
         char *infiles = argv[++(*pI)];
         printf("infiles set to: %s\n", infiles);
         (*pI)++;
+
         return ARG_NEUTRAL;
     }
     else if (strcmp(currentCommand, "-r") == 0 || strcmp(currentCommand, "--recover") == 0 ||
              strcmp(currentCommand, "--reverse") == 0 || strcmp(currentCommand, "--decode") == 0)
     {
         printf("Decoding mode selected.\n");
+        settings->reverse = 1;
         (*pI)++;
         return ARG_NEUTRAL;
     }
@@ -211,7 +241,7 @@ int handleParameter(int *pI, int argc, char const *argv[])
     return ARG_ERROR; // Should never happen. Only here to catch errors
 };
 
-int parameterLoop(int argc, char const *argv[])
+int parameterLoop(int argc, char const *argv[], struct CBMPSettings *settings)
 {
 
     // printf("There are %d arguments.\n", argc - 1);
@@ -221,8 +251,20 @@ int parameterLoop(int argc, char const *argv[])
     // for (i = 0; i < argc; i++)
     do
     {
-        loopStatus = handleParameter(pI, argc, argv);
+        loopStatus = handleParameter(pI, argc, argv, settings);
     } while (i < argc && loopStatus == ARG_NEUTRAL);
 
     return loopStatus;
+}
+
+int getStringCount(int argc, char const *argv[], int index)
+{
+    index++;
+    while (index < argc)
+    {
+        if (strncmp("-", argv[index], 1) == 0)
+            break;
+        index++;
+    }
+    return index;
 }
