@@ -42,10 +42,27 @@ struct BMPInfoHeader
 
 #pragma pack(pop)
 
+struct CBMPSettings
+{
+    char **infiles;
+    int infilesCount;
+    char **infiles2;
+    int infiles2Count;
+    char **outfiles;
+    int outfilesCount;
+    int reverse;
+};
+
 /*
     Temporary documentation for a temporary function.
 */
 void createBMP(const char *, int, int);
+
+void createBMP2(struct CBMPSettings *settings);
+/*
+Returns a formatted text with the CBMPSettings.
+*/
+void printSettings(struct CBMPSettings * settings);
 /*
 * Writes the data to the buffer...
 */

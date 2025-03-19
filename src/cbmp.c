@@ -12,17 +12,6 @@
 #define ARG_ERROR -1
 #define ARG_NEUTRAL 0
 
-struct CBMPSettings
-{
-    char **infiles;
-    int infilesCount;
-    char **infiles2;
-    int infiles2Count;
-    char **outfiles;
-    int outfilesCount;
-    int reverse;
-};
-
 int randRange(int, int);
 int distance(int, int, int, int);
 
@@ -58,18 +47,14 @@ int main(int argc, char const *argv[])
         break;
     }
 
-    printf("Settings:\n\tInFiles[%d]: ",settings.infilesCount);
-    // for (int i = 0; i < settings.infilesCount; i++)
-    // {
-    //     // char* a = (*(settings.infiles))[i];
-    //     // printf("%d",i);
-    //     // printf("%d",settings.infiles);
-    //     printf("%s; ",settings.infiles[i]);
-    // }
-    
-    printf("\n\tInFiles2[%d]: ", settings.infiles2Count);
-    printf("\n\tOutFiles[%d]: ", settings.outfilesCount);
-    printf("\n\tIsReverse: %d\n", settings.reverse);
+    printSettings(&settings);
+
+    if (success == ARG_NEUTRAL)
+    {
+        printf("All parameters read. Advancing.\n");
+        createBMP2(&settings);
+    }
+
     return 0;
 }
 
@@ -170,6 +155,48 @@ void createBMP(const char *filename, int width, int height)
     fclose(file);
 }
 
+void createBMP2(struct CBMPSettings *settings)
+{
+    char *outFileName;
+    if (settings->outfilesCount < 1)
+    {
+        outFileName = "output.BMP";
+    }
+    else
+    {
+        outFileName = settings->outfiles[0];
+    }
+    printf("OutFile will be %s\n", outFileName);
+    FILE **localInFiles = malloc(settings->infilesCount * sizeof(FILE *));
+    for (int i = 0; i < settings->infilesCount; i++)
+    {
+        localInFiles[i] = fopen(settings->infiles[i], "rb");
+    }
+    for (int i = 0; i < settings->infilesCount; i++)
+    {
+        printf("%d\n",i);
+        char buffer[10];
+        fread(buffer,10,1,localInFiles[i]);
+        fclose(localInFiles[i]);
+        printf("%X\n",buffer);
+        printf("%s\n",buffer);
+    }
+
+    // https://stackoverflow.com/a/22059317
+    // FILE *fileptr;
+    // char *buffer;
+    // long filelen;
+
+    // fileptr = fopen("myfile.txt", "rb"); // Open the file in binary mode
+    // fseek(fileptr, 0, SEEK_END);         // Jump to the end of the file
+    // filelen = ftell(fileptr);            // Get the current byte offset in the file
+    // rewind(fileptr);                     // Jump back to the beginning of the file
+
+    // buffer = (char *)malloc(filelen * sizeof(char)); // Enough memory for the file
+    // fread(buffer, filelen, 1, fileptr);              // Read in the entire file
+    // fclose(fileptr);                                 // Close the file
+}
+
 int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings)
 {
     if (argc <= 1)
@@ -200,19 +227,92 @@ int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *
             // (*pI)++;
             return ARG_ERROR;
         }
-        // TODO get all the infiles
+        if (settings->infiles != NULL)
+        {
+            free(settings->infiles);
+            settings->infiles = NULL;
+        }
         settings->infilesCount = getStringCount(argc, argv, *pI) - (*pI + 1);
-        printf("There are %d files.\n", settings->infilesCount);
-        char *infiles = argv[++(*pI)];
-        printf("infiles set to: %s\n", infiles);
-        (*pI)++;
+        // printf("There are %d files.\n", settings->infilesCount);
+        settings->infiles = (char **)malloc(settings->infilesCount * sizeof(char *));
+        if (settings->infiles == NULL)
+        {
+            printf("malloc failed to alocate space for the infiles");
+            return ARG_ERROR;
+        }
+        for (int i = 0; i < settings->infilesCount; i++)
+        {
+            settings->infiles[i] = argv[*pI + i + 1];
+        }
+
+        (*pI) += settings->infilesCount + 1;
+
+        return ARG_NEUTRAL;
+    }
+    else if (strcmp(currentCommand, "-if2") == 0)
+    {
+        if (*pI + 1 >= argc)
+        {
+            printf("Not enough arguments passed. After the flag \"%s\" an input file or directory was expected.\n", currentCommand);
+            // (*pI)++;
+            return ARG_ERROR;
+        }
+        if (settings->infiles2 != NULL)
+        {
+            free(settings->infiles2);
+            settings->infiles2 = NULL;
+        }
+        settings->infiles2Count = getStringCount(argc, argv, *pI) - (*pI + 1);
+        // printf("There are %d files.\n", settings->infiles2Count);
+        settings->infiles2 = (char **)malloc(settings->infiles2Count * sizeof(char *));
+        if (settings->infiles2 == NULL)
+        {
+            printf("malloc failed to alocate space for the infiles2");
+            return ARG_ERROR;
+        }
+        for (int i = 0; i < settings->infiles2Count; i++)
+        {
+            settings->infiles2[i] = argv[*pI + i + 1];
+        }
+
+        (*pI) += settings->infiles2Count + 1;
+
+        return ARG_NEUTRAL;
+    }
+    else if (strcmp(currentCommand, "-of") == 0)
+    {
+        if (*pI + 1 >= argc)
+        {
+            printf("Not enough arguments passed. After the flag \"%s\" an input file or directory was expected.\n", currentCommand);
+            // (*pI)++;
+            return ARG_ERROR;
+        }
+        if (settings->outfiles != NULL)
+        {
+            free(settings->outfiles);
+            settings->outfiles = NULL;
+        }
+        settings->outfilesCount = getStringCount(argc, argv, *pI) - (*pI + 1);
+        // printf("There are %d files.\n", settings->outfilesCount);
+        settings->outfiles = (char **)malloc(settings->outfilesCount * sizeof(char *));
+        if (settings->outfiles == NULL)
+        {
+            printf("malloc failed to alocate space for the outfiles");
+            return ARG_ERROR;
+        }
+        for (int i = 0; i < settings->outfilesCount; i++)
+        {
+            settings->outfiles[i] = argv[*pI + i + 1];
+        }
+
+        (*pI) += settings->outfilesCount + 1;
 
         return ARG_NEUTRAL;
     }
     else if (strcmp(currentCommand, "-r") == 0 || strcmp(currentCommand, "--recover") == 0 ||
              strcmp(currentCommand, "--reverse") == 0 || strcmp(currentCommand, "--decode") == 0)
     {
-        printf("Decoding mode selected.\n");
+        // printf("Decoding mode selected.\n");
         settings->reverse = 1;
         (*pI)++;
         return ARG_NEUTRAL;
@@ -267,4 +367,36 @@ int getStringCount(int argc, char const *argv[], int index)
         index++;
     }
     return index;
+}
+
+void printSettings(struct CBMPSettings *settings)
+{
+    printf("Settings:\n\tInFiles[%d]: ", settings->infilesCount);
+    for (int i = 0; i < settings->infilesCount; i++)
+    {
+        if (settings->infiles && settings->infiles[i])
+            printf("%s; ", settings->infiles[i]);
+        else
+            printf("error? ");
+    }
+
+    printf("\n\tInFiles2[%d]: ", settings->infiles2Count);
+    for (int i = 0; i < settings->infiles2Count; i++)
+    {
+        if (settings->infiles2 && settings->infiles2[i])
+            printf("%s; ", settings->infiles2[i]);
+        else
+            printf("error? ");
+    }
+
+    printf("\n\tOutFiles[%d]: ", settings->outfilesCount);
+    for (int i = 0; i < settings->outfilesCount; i++)
+    {
+        if (settings->outfiles && settings->outfiles[i])
+            printf("%s; ", settings->outfiles[i]);
+        else
+            printf("error? ");
+    }
+
+    printf("\n\tIsReverse: %d\n", settings->reverse);
 }
