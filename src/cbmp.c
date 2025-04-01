@@ -170,32 +170,118 @@ void createBMP2(struct CBMPSettings *settings)
     FILE **localInFiles = malloc(settings->infilesCount * sizeof(FILE *));
     for (int i = 0; i < settings->infilesCount; i++)
     {
+
         localInFiles[i] = fopen(settings->infiles[i], "rb");
-    }
-    for (int i = 0; i < settings->infilesCount; i++)
-    {
-        printf("%d\n",i);
-        char buffer[10];
-        fread(buffer,10,1,localInFiles[i]);
+        fseek(localInFiles[i], 0, SEEK_END);
+        int fileLength = ftell(localInFiles[i]);
+        rewind(localInFiles[i]);
+
+        char *buffer = (char *)malloc(sizeof(char) * fileLength);
+        fread(buffer, sizeof(char), fileLength, localInFiles[i]);
         fclose(localInFiles[i]);
-        printf("%X\n",buffer);
-        printf("%s\n",buffer);
+
+        for (int j = 0; j < fileLength; j++)
+        {
+            printf("%c", buffer[j]);
+        }
+        printf("\n");
+        for (int j = 0; j < fileLength; j++)
+        {
+            printf("%X", buffer[j]);
+        }
+        printf("\n");
+
+        FILE *copy = fopen("test.out.txt", "wb");
+        fwrite(buffer, sizeof(char), fileLength, copy);
+        fclose(copy);
     }
-
-    // https://stackoverflow.com/a/22059317
-    // FILE *fileptr;
-    // char *buffer;
-    // long filelen;
-
-    // fileptr = fopen("myfile.txt", "rb"); // Open the file in binary mode
-    // fseek(fileptr, 0, SEEK_END);         // Jump to the end of the file
-    // filelen = ftell(fileptr);            // Get the current byte offset in the file
-    // rewind(fileptr);                     // Jump back to the beginning of the file
-
-    // buffer = (char *)malloc(filelen * sizeof(char)); // Enough memory for the file
-    // fread(buffer, filelen, 1, fileptr);              // Read in the entire file
-    // fclose(fileptr);                                 // Close the file
 }
+
+// void createBMP3(const char *filename, int width, int height)
+// {
+//     // Create the BMP file
+//     FILE *file = fopen(filename, "wb");
+//     if (!file)
+//     {
+//         perror("Unable to create BMP file");
+//         return;
+//     }
+
+//     // Prepare headers
+//     struct BMPHeader bmpHeader = {0};
+//     struct BMPInfoHeader bmpInfoHeader = {0};
+
+//     int imageByteCount = width * height * sizeof(union Color24);
+
+//     bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
+//     bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
+//     bmpHeader.bfOffBits = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader);                 // Data offset
+
+//     bmpInfoHeader.biSize = sizeof(struct BMPInfoHeader);
+//     bmpInfoHeader.biWidth = width;
+//     bmpInfoHeader.biHeight = height;
+//     bmpInfoHeader.biPlanes = 1;
+//     bmpInfoHeader.biBitCount = 24;              // 24 bits for RGB
+//     bmpInfoHeader.biCompression = 0;            // No compression
+//     bmpInfoHeader.biSizeImage = imageByteCount; // Image data size
+//     // bmpInfoHeader.biXPelsPerMeter = 2835; // 72 DPI
+//     // bmpInfoHeader.biYPelsPerMeter = 2835; // 72 DPI
+//     bmpInfoHeader.biXPelsPerMeter = 0; // 0 = no data
+//     bmpInfoHeader.biYPelsPerMeter = 0; // 0 = no data
+
+//     // Write headers to file
+//     fwrite(&bmpHeader, sizeof(struct BMPHeader), 1, file);
+//     fwrite(&bmpInfoHeader, sizeof(struct BMPInfoHeader), 1, file);
+
+//     // Prepare pixel data (RGB)
+//     union Color24 *pixelData = (union Color24 *)malloc(imageByteCount);
+//     if (!pixelData)
+//     {
+//         perror("Unable to allocate memory for pixel data");
+//         fclose(file);
+//         return;
+//     }
+
+//     // for (int i = 0; i < width * height; i++)
+//     // {
+//     //     pixelData[i].red = randRange(0, 255);
+//     //     pixelData[i].green = randRange(0, 255);
+//     //     pixelData[i].blue = randRange(0, 255);
+//     // }
+//     int crx, cry, cgx, cgy, cbx, cby;
+//     crx = randRange(0, 255);
+//     cry = randRange(0, 255);
+//     cgx = randRange(0, 255);
+//     cgy = randRange(0, 255);
+//     cbx = randRange(0, 255);
+//     cby = randRange(0, 255);
+//     printf("%d,%d\n%d,%d\n%d,%d\n", crx, cry, cgx, cgy, cbx, cby);
+//     for (int y = 0; y < height; y++)
+//     {
+//         for (int x = 0; x < width; x++)
+//         {
+//             pixelData[width * y + x].red = fmax(0, 255 - (distance(x, y, 0, 0)));
+//             pixelData[width * y + x].green = fmax(0, 255 - (distance(x, y, 0, height)));
+//             pixelData[width * y + x].blue = fmax(0, 255 - (distance(x, y, width, height / 2)));
+//             // pixelData[width * y + x].red = 255-(distance(x,y,0,0)%255);
+//             // pixelData[width * y + x].green = 255-(distance(x,y,0,height)%255);
+//             // pixelData[width * y + x].blue = 255-(distance(x,y,width,height/2)%255);
+//             // pixelData[width * y + x].red = (x < 70 && y < 60) ? 255 : 0;
+//             // pixelData[width * y + x].green = (x < 70 && y > 40) ? 255 : 0;
+//             // pixelData[width * y + x].blue = (x > 50) ? 255 : 0;
+//             // pixelData[width * y + x].red = randRange(0, 255);
+//             // pixelData[width * y + x].green = randRange(0, 255);
+//             // pixelData[width * y + x].blue = randRange(0, 255);
+//         }
+//     }
+
+//     // Write pixel data to the file
+//     fwrite(pixelData, 1, imageByteCount, file);
+
+//     // Clean up and close the file
+//     free(pixelData);
+//     fclose(file);
+// }
 
 int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings)
 {
