@@ -18,7 +18,7 @@ int distance(int, int, int, int);
 int parameterLoop(int argc, char const *argv[], struct CBMPSettings *settings);
 int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings);
 int getStringCount(int argc, char const *argv[], int index);
-void createBMPFile(FILE *outFile, int width, int height, char *data);
+void createBMPFile(FILE *outFile, int dataLength, char *data);
 
 int main(int argc, char const *argv[])
 {
@@ -188,7 +188,7 @@ void createBMP2(struct CBMPSettings *settings)
         printf("\n");
         for (int j = 0; j < fileLength; j++)
         {
-            printf("%X", buffer[j]);
+            printf("%02hhX ", buffer[j]);
         }
         printf("\n");
 
@@ -197,12 +197,12 @@ void createBMP2(struct CBMPSettings *settings)
         // fclose(copy);
         FILE * copy = fopen("test.out.bmp", "wb");
         // fileLength = fileLength/3;// 3
-        createBMPFile(copy,ceil(sqrt(fileLength)),ceil(sqrt(fileLength)),buffer);
+        createBMPFile(copy,fileLength,buffer);
         fclose(copy);
     }
 }
 
-void createBMPFile(FILE *outFile, int width, int height, char *data)
+void createBMPFile(FILE *outFile, int dataLength, char *data)
 {
 
     // Prepare headers
@@ -210,7 +210,15 @@ void createBMPFile(FILE *outFile, int width, int height, char *data)
     struct BMPInfoHeader bmpInfoHeader = {0};
 
     // int imageByteCount = width * height * sizeof(union Color24);
-    int imageByteCount = width * height;
+    // int height = ceil(sqrt(dataLength));
+    // int width = ceil(sqrt(dataLength));
+    // int height = ceil(sqrt(ceil(dataLength/3)));
+    // int width = ceil((ceil(dataLength/3))/height);
+    // int imageByteCount = width*height*3;
+    int height = ceil(sqrt(ceil(dataLength)));
+    int width = ceil(dataLength/height);
+    int imageByteCount = width*height * 3;
+    printf("Inbytes:%d\nActualBytes:%d\n",dataLength,imageByteCount);
 
     bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
     bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
