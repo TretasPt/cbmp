@@ -19,6 +19,8 @@ int parameterLoop(int argc, char const *argv[], struct CBMPSettings *settings);
 int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings);
 int getStringCount(int argc, char const *argv[], int index);
 void createBMPFile(FILE *outFile, int dataLength, char *data);
+void writePixel(FILE *outFile, int dataLength, char *data, int *index);
+void writeLine(FILE *outFile, int dataLength, char *data, int *index, int width);
 
 int main(int argc, char const *argv[])
 {
@@ -53,7 +55,7 @@ int main(int argc, char const *argv[])
     if (success == ARG_NEUTRAL)
     {
         printf("All parameters read. Advancing.\n");
-        createBMP2(&settings);
+        createBMP(&settings);
     }
 
     return 0;
@@ -70,7 +72,7 @@ int distance(int x1, int y1, int x2, int y2)
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-void createBMP(const char *filename, int width, int height)
+void createBMP_baseTest(const char *filename, int width, int height)
 {
     // Create the BMP file
     FILE *file = fopen(filename, "wb");
@@ -84,7 +86,7 @@ void createBMP(const char *filename, int width, int height)
     struct BMPHeader bmpHeader = {0};
     struct BMPInfoHeader bmpInfoHeader = {0};
 
-    int imageByteCount = width * height * sizeof(union Color24);
+    int imageByteCount = width * height * sizeof(struct Color24);
 
     bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
     bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
@@ -107,7 +109,7 @@ void createBMP(const char *filename, int width, int height)
     fwrite(&bmpInfoHeader, sizeof(struct BMPInfoHeader), 1, file);
 
     // Prepare pixel data (RGB)
-    union Color24 *pixelData = (union Color24 *)malloc(imageByteCount);
+    struct Color24 *pixelData = (struct Color24 *)malloc(imageByteCount);
     if (!pixelData)
     {
         perror("Unable to allocate memory for pixel data");
@@ -156,7 +158,7 @@ void createBMP(const char *filename, int width, int height)
     fclose(file);
 }
 
-void createBMP2(struct CBMPSettings *settings)
+void createBMP(struct CBMPSettings *settings)
 {
     char *outFileName;
     if (settings->outfilesCount < 1)
@@ -195,11 +197,35 @@ void createBMP2(struct CBMPSettings *settings)
         // FILE *copy = fopen("test.out.txt", "wb");
         // fwrite(buffer, sizeof(char), fileLength, copy);
         // fclose(copy);
-        FILE * copy = fopen("test.out.bmp", "wb");
+        FILE *copy = fopen("test.out.bmp", "wb");
         // fileLength = fileLength/3;// 3
-        createBMPFile(copy,fileLength,buffer);
+        createBMPFile(copy, fileLength, buffer);
         fclose(copy);
     }
+}
+
+void writePixel(FILE *outFile, int dataLength, char *data, int *index)
+{
+    struct Color24 pixel = {0};
+    pixel.red = data[*index + 2];
+    pixel.green = data[*index + 1];
+    pixel.blue = data[*index];
+
+    fwrite(&pixel, sizeof(struct Color24), 1, outFile);
+    (*index) += sizeof(struct Color24);
+}
+void writeLine(FILE *outFile, int dataLength, char *data, int *index, int width)
+{
+    for (int i = 0; i < width; i++)
+    {
+        writePixel(outFile, dataLength, data, index);
+    }
+
+    // Padd line to the next 4 bytes.
+    uint8_t padding[3] = {0};
+    int paddingAmount = ((-width) % 4 + 4) % 4;
+    fwrite(&padding, paddingAmount, 1, outFile);
+    // (*index) += paddingAmount;
 }
 
 void createBMPFile(FILE *outFile, int dataLength, char *data)
@@ -209,16 +235,19 @@ void createBMPFile(FILE *outFile, int dataLength, char *data)
     struct BMPHeader bmpHeader = {0};
     struct BMPInfoHeader bmpInfoHeader = {0};
 
+    int neededPixels = ceil(dataLength / 3.0);
+    int height = ceil(sqrt(ceil(neededPixels)));
+    int width = ceil((ceil(neededPixels)) / height);
+    int paddingAmount = ((-width) % 4 + 4) % 4;
+    int imageByteCount = (width + paddingAmount) * height * sizeof(struct Color24);
+    // char * paddedData = malloc(sizeof(char) * (width + width%4) * height);
+
     // int imageByteCount = width * height * sizeof(union Color24);
     // int height = ceil(sqrt(dataLength));
     // int width = ceil(sqrt(dataLength));
-    // int height = ceil(sqrt(ceil(dataLength/3)));
-    // int width = ceil((ceil(dataLength/3))/height);
-    // int imageByteCount = width*height*3;
-    int height = ceil(sqrt(ceil(dataLength)));
-    int width = ceil(dataLength/height);
-    int imageByteCount = width*height * 3;
-    printf("Inbytes:%d\nActualBytes:%d\n",dataLength,imageByteCount);
+    // int height = ceil(sqrt(ceil(dataLength)));
+    // int width = ceil(dataLength/height);
+    // int imageByteCount = width*height * 3;
 
     bmpHeader.bfType = 0x4D42;                                                                     // "BM" in ASCII
     bmpHeader.bfSize = sizeof(struct BMPHeader) + sizeof(struct BMPInfoHeader) + (imageByteCount); // Total file size
@@ -241,9 +270,13 @@ void createBMPFile(FILE *outFile, int dataLength, char *data)
     fwrite(&bmpInfoHeader, sizeof(struct BMPInfoHeader), 1, outFile);
 
     // Write pixel data to the file
-    fwrite(data, 1, imageByteCount, outFile);
-
-    // Clean up and close the file
+    // fwrite(data, 1, imageByteCount, outFile);
+    int index = 0;
+    // writePixel(outFile, dataLength, data, &index);
+    for (int i = 0; i < height; i++)
+    {
+        writeLine(outFile, dataLength, data, &index, width);
+    }
 }
 
 int handleParameter(int *pI, int argc, char const *argv[], struct CBMPSettings *settings)

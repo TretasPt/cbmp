@@ -3,17 +3,14 @@
 // Structures
 
 #pragma pack(push, 1) // Ensure no padding
-// Color with 24 bpp
-// Define a union to allow access to RGB channels as one 24-bit value or individually
-union Color24
+                      // Color with 24 bpp
+                      // Define a union to allow access to RGB channels as one 24-bit value or individually
+
+struct Color24
 {
-    struct
-    {
-        uint8_t blue;
-        uint8_t green;
-        uint8_t red;
-    };
-    uint32_t colorValue; // Treat the entire RGB as a 32-bit value (with padding)
+    uint8_t blue;
+    uint8_t green;
+    uint8_t red;
 };
 
 // BMP file header (14 bytes)
@@ -58,9 +55,9 @@ struct CBMPSettings
 /*
     Temporary documentation for a temporary function.
 */
-void createBMP(const char *, int, int);
+void createBMP_baseTest(const char *, int, int);
 
-void createBMP2(struct CBMPSettings *settings);
+void createBMP(struct CBMPSettings *settings);
 /*
 Returns a formatted text with the CBMPSettings.
 */
