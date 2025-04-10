@@ -197,7 +197,7 @@ void createBMP(struct CBMPSettings *settings)
         // FILE *copy = fopen("test.out.txt", "wb");
         // fwrite(buffer, sizeof(char), fileLength, copy);
         // fclose(copy);
-        FILE *copy = fopen("test.out.bmp", "wb");
+        FILE *copy = fopen("./output/test.out.bmp", "wb");
         // fileLength = fileLength/3;// 3
         createBMPFile(copy, fileLength, buffer);
         fclose(copy);
@@ -207,8 +207,11 @@ void createBMP(struct CBMPSettings *settings)
 void writePixel(FILE *outFile, int dataLength, char *data, int *index)
 {
     struct Color24 pixel = {0};
+    if(*index+2<dataLength)
     pixel.red = data[*index + 2];
+    if(*index+1<dataLength)
     pixel.green = data[*index + 1];
+    if(*index<dataLength)
     pixel.blue = data[*index];
 
     fwrite(&pixel, sizeof(struct Color24), 1, outFile);
@@ -223,7 +226,7 @@ void writeLine(FILE *outFile, int dataLength, char *data, int *index, int width)
 
     // Padd line to the next 4 bytes.
     uint8_t padding[3] = {0};
-    int paddingAmount = ((-width) % 4 + 4) % 4;
+    int paddingAmount = ((-width*sizeof(struct Color24)) % 4 + 4) % 4;
     fwrite(&padding, paddingAmount, 1, outFile);
     // (*index) += paddingAmount;
 }

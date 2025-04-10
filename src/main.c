@@ -51,13 +51,20 @@ int main(int argc, char const *argv[])
     //     printf("%d\n", i);
     // }
 
-    printf("There are %d arguments.\n", argc);
-    for (int i = 0; i < argc; i++)
-    {
-        printf("%d: %s\n", i, argv[i]);
-    }
+    // printf("There are %d arguments.\n", argc);
+    // for (int i = 0; i < argc; i++)
+    // {
+    //     printf("%d: %s\n", i, argv[i]);
+    // }
 
-    union Color24 color = {0};
+    for (int i = 0; i < 100; i++)
+    {
+        int paddingAmount = ((-i) % 4 + 4) % 4;
+        printf("%d + %d = %d\n",i,paddingAmount,i + paddingAmount);
+    }
+    
+
+    // union Color24 color = {0};
 }
 
 static int firstMain(int argc, char const *argv[])
